@@ -1,0 +1,13 @@
+# Dependencias
+node_modules/
+
+# Archivos de salida de la compilación
+dist/
+build/
+
+#Archivos de bloqueo del gestor de paquetes
+package-lock.json
+yarn.lock
+
+# Caché de Tailwind
+.tailwind-cache/

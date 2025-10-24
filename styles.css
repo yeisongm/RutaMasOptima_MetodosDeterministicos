@@ -1,0 +1,11 @@
+#network {
+    height: calc(100vh - 0px);
+}
+
+/* Ajuste visual del panel de logs */
+pre#logs {
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 18rem;
+    overflow: auto;
+}
