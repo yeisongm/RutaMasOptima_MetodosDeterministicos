@@ -1,6 +1,5 @@
 /***********************
      *  VIS + DP (Top-K)   *
-     *  Código listo para ejecutar localmente
      ***********************/
 
 // ---- datasets vis.js ----
