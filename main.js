@@ -11,7 +11,9 @@ let inicioNodeId = null;
 let terminoNodeId = null;
 
 // Colores para resaltar rutas
-const colores = ["#16a34a", "#ef4444", "#f59e0b", "#06b6d4", "#7c3aed", "#84cc16", "#db2777", "#0ea5e9"];
+// Color principal: #16a34a (verde)
+const colores = ["#52b788", "#f59e0b", "#ef4444", "#db2777", "#7c3aed", "#0ea5e9", "#06b6d4", "#84cc16"];
+const bordesColores = ["#2f855a", "#b45309", "#991b1b", "#831843", "#5b21b6", "#0369a1", "#164e63", "#4d7c0f"];
 
 // Inicializar red
 const container = document.getElementById('network');
@@ -82,13 +84,12 @@ function crearNodo(label, valor) {
 // Agregar arista (evita duplicados)
 function agregarArista(desdeId, haciaId) {
     // comprobar duplicado
-    debugger
     const valorDesde = Number(desdeId.value);
     const valorHacia = Number(haciaId.value);
     const exist = edges.get({ filter: e => e.from == valorDesde && e.to == valorHacia });
-    if (exist && exist.length > 0) { log('La arista ya existe'); return; }
+    if (exist && exist.length > 0) { log('La estación ya existe'); return; }
     edges.add({ from: valorDesde, to: valorHacia });
-    log(`Arista creada: ${desdeId[valorDesde - 1]?.text} -> ${haciaId[valorHacia - 1]?.text}`);
+    log(`Estación creada: ${desdeId[valorDesde - 1]?.text} -> ${haciaId[valorHacia - 1]?.text}`);
 }
 
 // Marcar nodo como inicio
@@ -99,14 +100,14 @@ function marcarInicio(id) {
     }
     inicioNodeId = id;
     nodes.update({ id, color: { background: '#fef3c7', border: '#b45309' } });
-    log(`Nodo ${id} marcado como Inicio`);
+    log(`Estación ${id} marcado como "Inicio"`);
 }
 
 // Finalizar grafo: crear T (si no existe) y conectar hojas a T
 function finalizarGrafo() {
     if (terminoNodeId == null) {
         terminoNodeId = nextNodeId++;
-        nodes.add({ id: terminoNodeId, label: 'Terminacion', value: 0, color: { background: '#00c451ff', border: '#00461dff' } });
+        nodes.add({ id: terminoNodeId, label: 'Fin', value: 0, color: { background: '#00c451ff', border: '#00461dff' } });
     }
     // calcular nodos que no tienen aristas salientes (excluyendo T)
     const all = new Set(nodes.getIds().map(String));
@@ -120,7 +121,7 @@ function finalizarGrafo() {
         if (!existe || existe.length === 0) edges.add({ from: id, to: terminoNodeId });
     });
     actualizarLabels();
-    log('Finalizado: nodo T creado y hojas conectadas a T');
+    log('Finalizado: Estación final creada y conectada a las demás');
 }
 
 // Construir estructuras para DP a partir de nodes/edges
@@ -218,16 +219,31 @@ function calcularTopKDesde(inicioIdStr, valoresMap, aristasArray, K = 3, modo = 
 function destacarRutas(listadoRutas) {
     // limpiar estilos previos
     edges.forEach(e => edges.update({ id: e.id, color: { color: '#e5e7eb' }, width: 1 }));
-    nodes.forEach(n => nodes.update({ id: n.id, color: undefined, size: 18 }));
+    nodes.forEach(n => {
+        const updateData = { id: n.id, color: undefined, size: 18 };
 
-    for (let i = 0; i < listadoRutas.length; i++) {
-        const item = listadoRutas[i];
+        if (n.id === inicioNodeId) {
+            updateData.color = { background: '#fef3c7', border: '#b45309' };
+        } else if (n.id === terminoNodeId) {
+            updateData.color = { background: '#00c451ff', border: '#00461dff' };
+        }
+
+        nodes.update(updateData);
+    });
+
+    for (let i = listadoRutas.length; i > 0; i--) {
+        const item = listadoRutas[i - 1];
         const camino = item.camino;
-        const color = colores[i % colores.length];
+        const color = colores[i - 1 % colores.length];
+        const colorBorde = bordesColores[i - 1 % bordesColores.length];
         // nodos
         camino.forEach(idStr => {
             const id = Number(idStr);
-            nodes.update({ id, color: { background: color }, size: 26 });
+            //nodes.update({ id, color: { background: color }, size: 26 });
+
+            if (id !== inicioNodeId && id !== terminoNodeId) {
+                nodes.update({ id, color: { background: color, border: colorBorde }, size: 26 });
+            }
         });
         // aristas
         for (let j = 0; j < camino.length - 1; j++) {
@@ -250,7 +266,7 @@ document.getElementById('btnAgregarNodo').addEventListener('click', () => {
     const val = Number(nodoValue.value) || 0;
     const id = crearNodo(label, val);
 
-    log(`Nodo creado: id=${id} label=${label} valor=${val}`);
+    log(`Estación creada: id=${id} label=${label} valor=${val}`);
 
     nodoName.value = '';
     nodoValue.value = 1;
@@ -261,13 +277,13 @@ document.getElementById('btnAgregarArista').addEventListener('click', () => {
     const valorDesde = document.getElementById('selDesde').value;
     const hacia = document.getElementById('selHacia');
     const valorHacia = document.getElementById('selHacia').value;
-    if (!valorDesde || !valorHacia) return alert('Selecciona ambos nodos');
+    if (!valorDesde || !valorHacia) return alert('Selecciona ambas estaciones');
     if (valorDesde === valorHacia) return alert('No se permiten bucles');
     agregarArista(desde, hacia);
 });
 
 document.getElementById('btnSetInicio').addEventListener('click', () => {
-    const sel = document.getElementById('selDesde').value; if (!sel) return alert('Selecciona un nodo');
+    const sel = document.getElementById('selDesde').value; if (!sel) return alert('Selecciona una estación');
     marcarInicio(Number(sel));
 });
 
@@ -275,9 +291,57 @@ document.getElementById('btnFinalizar').addEventListener('click', () => {
     finalizarGrafo();
 });
 
+const mostrarRutasOptimas = (rutas) => {
+    const contenedor = document.getElementById("espacioRutasOptimas");
+    contenedor.innerHTML = ""; // limpiar rutas anteriores
+
+    rutas.forEach((ruta, i) => {
+        // Crear contenedor individual de la ruta
+        const rutaDiv = document.createElement("div");
+        rutaDiv.className = "p-3 rounded-xl shadow bg-white bt-2 bb-2";
+
+        // Título de la ruta
+        const titulo = document.createElement("h3");
+        titulo.className = "font-semibold mb-2";
+        titulo.textContent = `${i + 1}️⃣  Mejor ruta (suma = ${ruta.suma}):`;
+        rutaDiv.appendChild(titulo);
+
+        // Contenedor de los nodos
+        const nodosDiv = document.createElement("div");
+        nodosDiv.className = "flex items-center flex-wrap gap-2";
+
+        ruta.camino.forEach((nodo, idx) => {
+            // Crear nodo visual
+            const nodoDiv = document.createElement("div");
+            nodoDiv.textContent = nodes.get(Number(nodo))?.label.split('\n')[0] || nodo; // mostrar solo la primera línea del label
+            nodoDiv.className =
+                "w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold text-white";
+
+            // Colorear según posición
+            if (idx === 0) nodoDiv.classList.add("bg-yellow-500"); // inicio
+            else if (idx === ruta.camino.length - 1)
+                nodoDiv.classList.add("bg-green-600"); // fin
+            else nodoDiv.classList.add("bg-blue-300"); // intermedio
+
+            nodosDiv.appendChild(nodoDiv);
+
+            // Agregar flecha excepto al último nodo
+            if (idx < ruta.camino.length - 1) {
+                const flecha = document.createElement("span");
+                flecha.textContent = "→";
+                flecha.className = "text-lg font-bold text-gray-600";
+                nodosDiv.appendChild(flecha);
+            }
+        });
+
+        rutaDiv.appendChild(nodosDiv);
+        contenedor.appendChild(rutaDiv);
+    });
+};
+
 document.getElementById('btnCalcular').addEventListener('click', () => {
-    if (inicioNodeId == null) return alert('Marca primero el nodo Inicio');
-    if (terminoNodeId == null) return alert('Pulsa Finalizar grafo (crear T) antes de calcular');
+    if (inicioNodeId == null) return alert('Marca primero la estación Inicial');
+    if (terminoNodeId == null) return alert('Pulsa Finalizar ruta antes de calcular');
     const modo = document.getElementById('selModo').value;
     const K = Math.max(1, Number(document.getElementById('inputK').value) || 3);
     const { valoresMap, aristasArray } = construirDatosParaDP();
@@ -286,12 +350,15 @@ document.getElementById('btnCalcular').addEventListener('click', () => {
     log(`Resultado Top1.suma=${res.top1.sumaOptima}`);
     res.topK.forEach((it, idx) => log(`${idx + 1}. suma=${it.suma} ruta=${it.camino.join(' -> ')}`));
     destacarRutas(res.topK);
+
+    mostrarRutasOptimas(res.topK);
 });
 
 document.getElementById('btnLimpiar').addEventListener('click', () => {
     if (!confirm('¿Limpiar todo el grafo?')) return;
     nodes.clear(); edges.clear(); nextNodeId = 1; inicioNodeId = null; terminoNodeId = null;
     document.getElementById('logs').textContent = '';
+    document.getElementById('espacioRutasOptimas').innerHTML = '';
     refrescarSelects();
 });
 
