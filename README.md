@@ -22,6 +22,7 @@ Una aplicación web que permite calcular las rutas más óptimas entre diferente
 ## 📋 Prerrequisitos
 
 - Navegador web moderno
+- Node.js y npm instalados
 - Servidor web local (opcional)
 
 ## 🔧 Instalación
@@ -36,7 +37,27 @@ git clone https://github.com/yeisongm/RutaMasOptima_MetodosDeterministicos.git
 cd Rutas-Optimas_MetodosDeterministicos
 ```
 
-3. Abre el archivo `index.html` en tu navegador o configura un servidor web local
+3. Instala Tailwind CSS
+```bash
+npm install tailwindcss @tailwindcss/cli
+```
+
+4. Crea un archivo `tailwind.css` y añade:
+```css
+@import "tailwindcss";
+```
+
+5. Compila los estilos CSS
+```bash
+npx @tailwindcss/cli -i tailwind.css -o output.css --watch
+```
+
+6. Asegúrate que tu `index.html` tenga el link al CSS compilado:
+```html
+<link href="./output.css" rel="stylesheet">
+```
+
+7. Abre `index.html` en tu navegador o configura un servidor web local
 
 ## 💡 Uso
 
