@@ -387,3 +387,6 @@ const idInicio = crearNodo('Inicio', 0); marcarInicio(idInicio);
 // refrescar selects cada vez que cambia el dataset (observador simple)
 nodes.on('*', () => { refrescarSelects(); });
 edges.on('*', () => { /* nada extra */ });
+
+// Establecer el año actual
+  document.getElementById('currentYear').textContent = new Date().getFullYear();
