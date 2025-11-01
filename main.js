@@ -89,7 +89,7 @@ function agregarArista(desdeId, haciaId) {
     const exist = edges.get({ filter: e => e.from == valorDesde && e.to == valorHacia });
     if (exist && exist.length > 0) { log('La estación ya existe'); return; }
     edges.add({ from: valorDesde, to: valorHacia });
-    log(`Estación creada: ${desdeId[valorDesde - 1]?.text} -> ${haciaId[valorHacia - 1]?.text}`);
+    log(`Ruta creada: ${desdeId[valorDesde - 1]?.text} -> ${haciaId[valorHacia - 1]?.text}`);
 }
 
 // Marcar nodo como inicio
