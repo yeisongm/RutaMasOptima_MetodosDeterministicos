@@ -11,6 +11,10 @@ Una aplicación web que permite calcular las rutas más óptimas entre diferente
 - Exportar e importar datos en formato JSON
 - Historial de cambios con registro de operaciones
 - Interfaz responsive y amigable
+  
+## 👀 Vista previa
+
+![Interfaz principal](./images/interfaz-principal.png)
 
 ## 🛠️ Tecnologías Utilizadas
 
